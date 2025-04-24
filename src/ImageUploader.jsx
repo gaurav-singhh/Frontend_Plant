@@ -31,7 +31,7 @@ function ImageUploader({ onUploadSuccess }) {
 
     try {
       const response = await fetch(
-        "https://bakend-plant.onrender.com/api/upload ",
+        "https://bakend-plant.onrender.com/api/upload",
         {
           method: "POST",
           body: formData,
