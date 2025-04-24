@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { ClipLoader } from "react-spinners"; // Import the spinner from react-spinners
 
 function ImageUploader({ onUploadSuccess }) {
   const [image, setImage] = useState(null);
+  const [imageUrl, setImageUrl] = useState(null); // Added for preview
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -9,7 +11,8 @@ function ImageUploader({ onUploadSuccess }) {
     const file = e.target.files[0];
     if (file) {
       setImage(file);
-      setError(null); // Reset any previous errors
+      setImageUrl(URL.createObjectURL(file)); // Set the image URL for preview
+      setError(null);
     }
   };
 
@@ -27,19 +30,16 @@ function ImageUploader({ onUploadSuccess }) {
     formData.append("image", image);
 
     try {
-      const response = await fetch(
-        "https://bakend-plant.onrender.com/api/upload",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const response = await fetch("http://localhost:5000/api/upload", {
+        method: "POST",
+        body: formData,
+      });
 
       const result = await response.json();
       setLoading(false);
 
       if (response.ok) {
-        onUploadSuccess(result); // Send the result to the parent component
+        onUploadSuccess(result);
       } else {
         setError(result.error || "Something went wrong.");
       }
@@ -50,28 +50,49 @@ function ImageUploader({ onUploadSuccess }) {
   };
 
   return (
-    <div className="p-4">
+    <div className="w-full max-w-md bg-white shadow-md rounded-xl p-6">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-lg font-medium">Upload Image</label>
+          <label className="block text-lg font-medium text-gray-700 mb-1">
+            Upload a Leaf Image
+          </label>
           <input
             type="file"
             accept="image/*"
             onChange={handleFileChange}
-            className="mt-2 p-2 border border-gray-300 rounded"
+            className="w-full p-2 border border-gray-300 rounded-lg file:mr-2"
           />
         </div>
 
-        {error && <div className="text-red-500">{error}</div>}
+        {error && <div className="text-red-500 text-sm">{error}</div>}
+
+        {imageUrl && !loading && (
+          <div className="mt-4">
+            <img
+              src={imageUrl}
+              alt="Leaf Preview"
+              className="w-full h-auto rounded-lg shadow-md"
+            />
+          </div>
+        )}
+
+        {/* Spinner displayed during upload or prediction */}
+        {loading && (
+          <div className="flex justify-center mt-6">
+            <ClipLoader color="#36d7b7" loading={loading} size={50} />
+          </div>
+        )}
 
         <button
           type="submit"
-          className={`w-full py-2 px-4 bg-blue-500 text-white rounded ${
-            loading ? "opacity-50 cursor-not-allowed" : ""
+          className={`w-full py-2 px-4 text-white font-semibold rounded-lg transition duration-300 ${
+            loading
+              ? "bg-green-300 cursor-not-allowed"
+              : "bg-green-500 hover:bg-green-600"
           }`}
           disabled={loading}
         >
-          {loading ? "Uploading..." : "Upload"}
+          {loading ? "Uploading..." : "Analyze Leaf"}
         </button>
       </form>
     </div>
